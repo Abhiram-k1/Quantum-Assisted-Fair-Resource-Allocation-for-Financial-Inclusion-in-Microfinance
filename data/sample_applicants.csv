@@ -1,0 +1,9 @@
+applicant_id,demographic_group,monthly_income,dti_ratio,repayment_history,poverty_index,dependents,is_women_led,requested_amount
+MFI_APP_001,Group_A_Marginalized,14814.5,0.519,0.652,0.672,4,True,15000.0
+MFI_APP_002,Group_B_General,34520.03,0.199,0.915,0.22,2,False,25000.0
+MFI_APP_003,Group_B_General,34403.71,0.21,0.799,0.193,2,True,50000.0
+MFI_APP_004,Group_B_General,24987.06,0.382,0.973,0.489,3,False,50000.0
+MFI_APP_005,Group_A_Marginalized,14772.7,0.615,0.805,0.881,4,True,20000.0
+MFI_APP_006,Group_A_Marginalized,8832.01,0.561,0.619,0.833,5,True,15000.0
+MFI_APP_007,Group_A_Marginalized,11660.05,0.252,0.665,0.674,4,True,20000.0
+MFI_APP_008,Group_B_General,41954.74,0.315,0.888,0.42,2,False,35000.0
