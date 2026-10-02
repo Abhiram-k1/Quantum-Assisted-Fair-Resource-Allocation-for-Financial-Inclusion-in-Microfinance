@@ -142,7 +142,12 @@ def plot_qaoa_convergence(
     setup_plot_style()
     fig, ax = plt.subplots(figsize=(9, 5), dpi=300)
 
-    palette = {"QAOA (p=1)": "#3498db", "QAOA (p=2)": "#9b59b6", "VQE": "#f39c12"}
+    palette = {
+        "QAOA (p=1)": "#3498db",
+        "QAOA (p=2)": "#9b59b6",
+        "CVaR-QAOA (p=1, alpha=0.25)": "#e74c3c",
+        "VQE": "#f39c12"
+    }
 
     for name, history in qaoa_histories.items():
         color = palette.get(name, "#2c3e50")

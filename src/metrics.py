@@ -20,10 +20,11 @@ def evaluate_allocation(
     budget: float,
     qubo_mapper: Optional[QUBOMapper] = None,
     optimal_utility: Optional[float] = None,
-    solver_name: str = "Unknown"
+    solver_name: str = "Unknown",
+    risk_engine: Optional[Any] = None
 ) -> Dict[str, Any]:
     """
-    Computes financial, social, fairness, and quantum-approximation metrics
+    Computes financial, social, fairness, tail-risk, and quantum-approximation metrics
     for a given binary allocation vector x in {0, 1}^N.
     """
     x = np.asarray(allocation, dtype=int)
@@ -46,7 +47,7 @@ def evaluate_allocation(
     is_feasible = bool(total_cost <= budget + 1e-5)
     budget_utilization = float((total_cost / budget) * 100.0)
 
-    # Group approval rates
+    # Group approval rates and capital allocations
     mask_A = (groups == 0)
     mask_B = (groups == 1)
     n_A = max(1, int(np.sum(mask_A)))
@@ -54,6 +55,8 @@ def evaluate_allocation(
 
     approved_A = int(np.sum(x[mask_A]))
     approved_B = int(np.sum(x[mask_B]))
+    capital_A = float(np.sum(w[mask_A] * x[mask_A]))
+    capital_B = float(np.sum(w[mask_B] * x[mask_B]))
 
     rate_A = float(approved_A / n_A)
     rate_B = float(approved_B / n_B)
@@ -75,6 +78,17 @@ def evaluate_allocation(
     if optimal_utility is not None and optimal_utility > 0:
         approx_ratio = float(total_utility / optimal_utility)
 
+    # Risk metrics (Expected loss, VaR, CVaR)
+    exp_loss = None
+    cvar_95 = None
+    if risk_engine is not None:
+        risk_dict = risk_engine.evaluate_allocation_risk(x, alpha=0.95)
+        exp_loss = risk_dict["expected_loss"]
+        cvar_95 = risk_dict["cvar_95"]
+    elif "repayment_prob" in df_scored.columns:
+        p_rep = df_scored["repayment_prob"].values
+        exp_loss = round(float(np.sum(w * (1.0 - p_rep) * x)), 2)
+
     return {
         "solver": solver_name,
         "total_approved": total_approved,
@@ -86,8 +100,12 @@ def evaluate_allocation(
         "financial_return": round(total_financial, 4),
         "social_need_met": round(total_need, 4),
         "social_impact": round(total_social, 4),
+        "expected_loss": exp_loss,
+        "cvar_95_loss": cvar_95,
         "rate_group_A_marginalized": round(rate_A, 3),
         "rate_group_B_general": round(rate_B, 3),
+        "capital_group_A": round(capital_A, 2),
+        "capital_group_B": round(capital_B, 2),
         "demographic_parity_diff": round(dpd, 4),
         "disparate_impact_ratio": round(dir_score, 4),
         "qubo_energy": round(energy, 4) if energy is not None else None,
@@ -104,7 +122,10 @@ def compile_comparison_table(results_list: List[Dict[str, Any]]) -> pd.DataFrame
         "solver",
         "total_approved",
         "total_utility",
+        "total_cost",
         "budget_utilization_pct",
+        "expected_loss",
+        "cvar_95_loss",
         "is_feasible",
         "demographic_parity_diff",
         "disparate_impact_ratio",
@@ -113,4 +134,5 @@ def compile_comparison_table(results_list: List[Dict[str, Any]]) -> pd.DataFrame
         "allocation_bitstring"
     ]
     df_res = pd.DataFrame(results_list)
-    return df_res[display_cols]
+    available_cols = [c for c in display_cols if c in df_res.columns]
+    return df_res[available_cols]

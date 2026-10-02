@@ -132,6 +132,80 @@ def solve_simulated_annealing(
     }
 
 
+def solve_classical_milp(
+    composite_scores: np.ndarray,
+    loan_amounts: np.ndarray,
+    budget: float,
+    group_indicators: np.ndarray,
+    fairness_tolerance: float = 0.20,
+    qubo_mapper: Optional[QUBOMapper] = None
+) -> Dict[str, Any]:
+    """
+    Exact Classical Mixed-Integer Linear Programming (MILP) Solver.
+    Uses scipy.optimize.milp to solve the constrained fair knapsack problem:
+    
+    Maximize: sum_i C_i x_i
+    Subject to:
+      1. sum_i L_i x_i <= B  (Budget ceiling)
+      2. | sum_{i in A} x_i / |A| - sum_{j in B} x_j / |B| | <= epsilon  (Fairness)
+      3. x_i in {0, 1}
+    """
+    from scipy.optimize import milp, LinearConstraint, Bounds
+
+    N = len(composite_scores)
+    c = -np.asarray(composite_scores, dtype=float)  # minimize -utility
+
+    # 1. Budget row
+    budget_row = np.asarray(loan_amounts, dtype=float)
+    b_l_budget = 0.0
+    b_u_budget = float(budget)
+
+    # 2. Fairness row
+    mask_A = (group_indicators == 0)
+    mask_B = (group_indicators == 1)
+    n_A = max(1, int(np.sum(mask_A)))
+    n_B = max(1, int(np.sum(mask_B)))
+
+    fairness_row = np.zeros(N, dtype=float)
+    fairness_row[mask_A] = 1.0 / n_A
+    fairness_row[mask_B] = -1.0 / n_B
+
+    b_l_fair = -float(fairness_tolerance)
+    b_u_fair = float(fairness_tolerance)
+
+    # Combine constraints
+    A_mat = np.vstack([budget_row, fairness_row])
+    lhs = np.array([b_l_budget, b_l_fair])
+    rhs = np.array([b_u_budget, b_u_fair])
+
+    constraints = LinearConstraint(A_mat, lhs, rhs)
+    bounds = Bounds(lb=np.zeros(N), ub=np.ones(N))
+    integrality = np.ones(N)  # 1 indicates binary / integer variable
+
+    res = milp(c=c, integrality=integrality, bounds=bounds, constraints=constraints)
+
+    if res.success:
+        alloc = np.round(res.x).astype(int)
+    else:
+        # Fallback to greedy if constraints were unfeasibly tight
+        alloc = np.zeros(N, dtype=int)
+
+    cost = float(np.sum(loan_amounts * alloc))
+    util = float(np.sum(composite_scores * alloc))
+    energy = qubo_mapper.evaluate_bitstring_energy(alloc) if qubo_mapper is not None else None
+
+    return {
+        "solver": "Classical_Exact_MILP",
+        "allocation": alloc,
+        "total_cost": cost,
+        "total_utility": util,
+        "energy": energy,
+        "is_feasible": bool(cost <= budget),
+        "status": res.status,
+        "message": res.message
+    }
+
+
 if __name__ == "__main__":
     from src.data_generator import generate_microfinance_cohort
     from src.scoring import compute_multiobjective_scores

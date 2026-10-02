@@ -262,3 +262,55 @@ Feasible solutions satisfy $\sum w_i x_i \le B$, and the composite utility incor
 1. **First Formulation of Fair Microfinance Allocation as QUBO**: While quantum portfolio optimization focuses on Markowitz mean-variance models, Q-FAR pioneers the encoding of **social vulnerability, mission drift mitigation, and multi-group demographic parity** directly into the Hamiltonian.
 2. **Dual-Mode Algorithmic Engine**: Provides side-by-side benchmarking of **QAOA vs. VQE** on identical Hamiltonian instances, exposing key structural trade-offs in parameter sensitivity, circuit depth, and ground-state reachability.
 3. **Rigorous Tri-Objective Landscape**: Unifies financial viability, immediate humanitarian need, and group equity into a tunable Hamiltonian framework suitable for deployment on near-term NISQ quantum processors.
+
+---
+
+## 8. Tail-Risk Mitigation & CVaR-QAOA Mathematical Formulation
+
+### 8.1 The Standard QAOA Expectation Limitation
+In conventional QAOA (Farhi et al., 2014), the classical optimizer tunes circuit parameters $(\vec{\gamma}, \vec{\beta})$ to minimize the global expectation value of the cost Hamiltonian:
+$$\langle H_C \rangle_{\vec{\gamma}, \vec{\beta}} = \langle \psi(\vec{\gamma}, \vec{\beta}) | H_C | \psi(\vec{\gamma}, \vec{\beta}) \rangle = \sum_{k=0}^{2^N - 1} P_k(\vec{\gamma}, \vec{\beta}) E_k$$
+
+In financial combinatorial problems—especially microfinance with strict budgets and credit default uncertainty—optimizing the global mean can lead the variational optimizer to settle into broad, sub-optimal energetic basins where average performance is acceptable, but the probability of sampling the true feasible ground state remains low.
+
+### 8.2 CVaR-QAOA Variational Objective (Barkoutsos et al., 2020)
+To overcome this limitation, Q-FAR incorporates the **Conditional Value-at-Risk (CVaR)** objective. For a confidence level $\alpha \in (0, 1]$, CVaR evaluates the expected energy conditioned on being in the lowest $\alpha$-quantile of the energy distribution:
+
+Let the diagonal eigenenergies of $H_C$ be ordered in non-decreasing order:
+$$E_{(0)} \le E_{(1)} \le \dots \le E_{(2^N - 1)}$$
+with corresponding measurement probabilities $P_{(0)}, P_{(1)}, \dots, P_{(2^N - 1)}$.
+
+Let $K_\alpha$ be the cutoff index satisfying:
+$$\sum_{j=0}^{K_\alpha - 1} P_{(j)} < \alpha \le \sum_{j=0}^{K_\alpha} P_{(j)}$$
+
+The CVaR at level $\alpha$ is defined analytically as:
+$$\text{CVaR}_\alpha(H_C) = \frac{1}{\alpha} \left[ \sum_{j=0}^{K_\alpha - 1} P_{(j)} E_{(j)} + \left( \alpha - \sum_{j=0}^{K_\alpha - 1} P_{(j)} \right) E_{(K_\alpha)} \right]$$
+
+#### Theoretical Limiting Properties:
+1. **Expectation Limit**: As $\alpha \to 1.0$, all states enter the expectation:
+   $$\lim_{\alpha \to 1.0} \text{CVaR}_\alpha(H_C) = \langle H_C \rangle_{\vec{\gamma}, \vec{\beta}}$$
+2. **Ground-State Limit**: As $\alpha \to 0^+$, the objective focuses strictly on the minimum sampled eigenvalue:
+   $$\lim_{\alpha \to 0^+} \text{CVaR}_\alpha(H_C) = E_{(0)} = \min_{x \in \{0, 1\}^N} C(x)$$
+
+By minimizing $\text{CVaR}_\alpha(H_C)$ (typically with $\alpha = 0.25$), the classical optimizer ignores high-energy, infeasible bitstrings in the distribution tail, concentrating quantum probability amplitude specifically on ground states.
+
+### 8.3 Stochastic Portfolio Default Risk & Discrete VaR/CVaR
+Under repayment uncertainty, each applicant $i$ has a calibrated default probability $q_i = 1 - p_i$ estimated by the supervised AI predictor. In a Monte Carlo simulation across $S = 2,500$ default scenarios, the total financial portfolio loss in scenario $s$ for allocation vector $x$ is:
+$$\mathcal{L}^{(s)}(x) = \sum_{i=1}^N L_i \cdot x_i \cdot \delta_i^{(s)}, \quad \delta_i^{(s)} \sim \text{Bernoulli}(q_i)$$
+
+Sorting scenario losses $\mathcal{L}^{(1)} \le \mathcal{L}^{(2)} \le \dots \le \mathcal{L}^{(S)}$:
+- **Value-at-Risk ($\text{VaR}_{0.95}$)**: The 95th percentile portfolio loss:
+  $$\text{VaR}_{0.95}(x) = \mathcal{L}^{(\lceil 0.95 \cdot S \rceil)}$$
+- **Conditional Value-at-Risk ($\text{CVaR}_{0.95}$)**: The expected shortfall in the worst 5% tail:
+  $$\text{CVaR}_{0.95}(x) = \frac{1}{S - \lceil 0.95 \cdot S \rceil + 1} \sum_{s = \lceil 0.95 \cdot S \rceil}^S \mathcal{L}^{(s)}(x)$$
+
+### 8.4 Exact Classical Mixed-Integer Linear Programming (MILP) Baseline
+To provide a rigorous mathematical reference independent of quadratic penalty hyperparameter tuning, we formulate the exact constrained problem as a Mixed-Integer Linear Program (MILP):
+
+$$\max_{x \in \{0, 1\}^N} \sum_{i=1}^N C_i x_i$$
+$$\text{subject to:}$$
+$$\sum_{i=1}^N L_i x_i \le B \quad \text{(Strict Budget Ceiling)}$$
+$$-\epsilon \le \frac{1}{|G_A|} \sum_{i \in G_A} x_i - \frac{1}{|G_B|} \sum_{j \in G_B} x_j \le \epsilon \quad \text{(Demographic Parity Tolerance)}$$
+$$x_i \in \{0, 1\} \quad \forall i \in \{1, \dots, N\}$$
+
+This is solved to guaranteed global optimality using `scipy.optimize.milp` via the branch-and-cut simplex algorithm, serving as the benchmark standard for quantum and heuristic solvers.

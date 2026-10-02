@@ -106,15 +106,47 @@ class QuantumSimulator:
         probs = np.abs(state) ** 2
         return float(np.sum(probs * self.diag_energies))
 
+    def compute_cvar_energy(self, state: np.ndarray, alpha: float = 1.0) -> float:
+        """
+        Computes CVaR_alpha over the diagonal Hamiltonian energy distribution.
+        Follows Barkoutsos et al. (2020), 'Improving Variational Quantum Optimization using CVaR'.
+        
+        When alpha = 1.0, exactly equals standard expectation value <psi|H_C|psi>.
+        When alpha in (0, 1), evaluates the conditional expectation over the lowest alpha-quantile.
+        """
+        if alpha >= 1.0:
+            return self.compute_energy_expectation(state)
+
+        alpha = max(1e-4, float(alpha))
+        probs = np.abs(state) ** 2
+
+        # Sort energies in ascending order
+        order = np.argsort(self.diag_energies)
+        sorted_e = self.diag_energies[order]
+        sorted_p = probs[order]
+
+        cum_p = np.cumsum(sorted_p)
+        k_alpha = int(np.searchsorted(cum_p, alpha))
+        if k_alpha >= len(sorted_e):
+            k_alpha = len(sorted_e) - 1
+
+        p_head = sorted_p[:k_alpha]
+        e_head = sorted_e[:k_alpha]
+        rem_p = alpha - float(np.sum(p_head))
+
+        cvar = (np.sum(p_head * e_head) + max(0.0, rem_p) * sorted_e[k_alpha]) / alpha
+        return float(cvar)
+
 
 def solve_qaoa(
     qubo_mapper: QUBOMapper,
     p_layers: int = 1,
+    cvar_alpha: float = 1.0,
     max_iter: int = 120,
     seed: Optional[int] = 42
 ) -> Dict[str, Any]:
     """
-    Executes QAOA on the microfinance QUBO instance.
+    Executes QAOA on the microfinance QUBO instance with optional CVaR objective.
 
     Parameters:
     -----------
@@ -122,6 +154,8 @@ def solve_qaoa(
         The mapped problem instance.
     p_layers : int
         Number of alternating (cost, mixer) layers.
+    cvar_alpha : float
+        CVaR confidence quantile in (0, 1]. Defaults to 1.0 (standard QAOA).
     max_iter : int
         Maximum iterations for classical COBYLA optimizer.
     seed : int, optional
@@ -129,13 +163,7 @@ def solve_qaoa(
 
     Returns:
     --------
-    dict containing:
-        - 'solver': name
-        - 'allocation': optimal sampled binary allocation vector
-        - 'energy': expectation energy
-        - 'probabilities': probability array over 2^N states
-        - 'convergence_history': list of energy values during optimization
-        - 'optimal_angles': (gamma_opt, beta_opt)
+    dict containing solver results, optimal allocation, and convergence history.
     """
     if seed is not None:
         np.random.seed(seed)
@@ -158,9 +186,13 @@ def solve_qaoa(
             state = sim.apply_cost_unitary(state, gamma_vec[k])
             state = sim.apply_mixer_unitary(state, beta_vec[k])
 
-        exp_energy = sim.compute_energy_expectation(state)
-        history.append(exp_energy)
-        return exp_energy
+        if cvar_alpha < 1.0:
+            obj_val = sim.compute_cvar_energy(state, alpha=cvar_alpha)
+        else:
+            obj_val = sim.compute_energy_expectation(state)
+
+        history.append(obj_val)
+        return obj_val
 
     # Classical parameter optimization via COBYLA
     opt_res = minimize(
@@ -186,9 +218,12 @@ def solve_qaoa(
     best_alloc = np.array([(best_state_idx >> i) & 1 for i in range(qubo_mapper.N)], dtype=int)
     best_alloc_energy = qubo_mapper.evaluate_bitstring_energy(best_alloc)
 
+    solver_label = f"QAOA_p{p_layers}" if cvar_alpha >= 1.0 else f"CVaR_QAOA_p{p_layers}_a{int(cvar_alpha*100)}"
+
     return {
-        "solver": f"QAOA_p{p_layers}",
+        "solver": solver_label,
         "p_layers": p_layers,
+        "cvar_alpha": cvar_alpha,
         "allocation": best_alloc,
         "energy": float(opt_res.fun),
         "best_state_energy": float(best_alloc_energy),
@@ -199,6 +234,26 @@ def solve_qaoa(
         "best_state_index": best_state_idx,
         "optimizer_evals": len(history)
     }
+
+
+def solve_cvar_qaoa(
+    qubo_mapper: QUBOMapper,
+    p_layers: int = 1,
+    cvar_alpha: float = 0.25,
+    max_iter: int = 120,
+    seed: Optional[int] = 42
+) -> Dict[str, Any]:
+    """
+    Executes CVaR-QAOA (Conditional Value-at-Risk QAOA, Barkoutsos et al. 2020)
+    for tail-risk-aware quantum combinatorial optimization.
+    """
+    return solve_qaoa(
+        qubo_mapper=qubo_mapper,
+        p_layers=p_layers,
+        cvar_alpha=cvar_alpha,
+        max_iter=max_iter,
+        seed=seed
+    )
 
 
 def solve_vqe(

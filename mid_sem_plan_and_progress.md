@@ -1,8 +1,8 @@
-# Mid-Semester Project Plan & Progress Report (60% Accomplishment Milestone)
+# Mid-Semester Project Plan & Progress Report (70% Accomplishment Milestone)
 ## Project: Quantum-Assisted Fair Resource Allocation for Financial Inclusion in Microfinance (Q-FAR)
 **Course**: Quantum Computing and Advanced Algorithms (QCAA)  
 **Evaluation Stage**: Mid-Semester Review  
-**Current Completion Status**: Exactly **60% Accomplished** (Phase 1 Complete + Phase 2 Partially Implemented & Verified)
+**Current Completion Status**: Exactly **70.0% Accomplished** (Phase 1: 100% Complete + Phase 2: 75% Implemented & Verified)
 
 ---
 
@@ -19,51 +19,59 @@ To ensure a research-grade, algorithmically rigorous implementation, the Q-FAR p
          ▼                                      ▼                                      ▼
 ┌──────────────────────────────┐ ┌──────────────────────────────┐ ┌──────────────────────────────┐
 │           PHASE 1            │ │           PHASE 2            │ │           PHASE 3            │
-│   Mathematical Modeling &    │ │  Quantum Variational Circuits│ │   Hardware Scaling & Real    │
-│      Classical Baselines     │ │   & Midsem Benchmark Suite   │ │    Deployment (End-Sem)      │
+│   Mathematical Modeling,     │ │ Quantum Variational Circuits,│ │   Hardware Scaling & Real    │
+│  ML Repayment & Classical    │ │   Tail-Risk CVaR-QAOA &      │ │    Deployment (End-Sem)      │
+│      Benchmark Suite         │ │   Midsem Evaluation Suite    │ │                              │
 ├──────────────────────────────┤ ├──────────────────────────────┤ ├──────────────────────────────┤
 │ • Microfinance cohort model  │ │ • QUBO-to-Ising Hamiltonian  │ │ • IBM Quantum hardware run   │
-│ • Tri-objective scoring      │ │   mapping ($h_i, J_{ij}$)    │ │   via Qiskit Runtime         │
-│   (Financial, Need, Impact)  │ │ • QAOA Circuit Engine        │ │ • Zero-Noise Extrapolation   │
-│ • Quadratic penalty QUBO     │ │   ($U_C(\gamma), U_M(\beta)$)│ │   (ZNE) Error Mitigation     │
-│   (Budget + Fairness)        │ │ • VQE Hardware-Efficient     │ │ • Warm-Start / Recursive QAOA│
-│ • Classical Greedy Knapsack  │ │   Ansatz ($R_y$ + CNOT)      │ │ • Scaled 50+ applicant cohort│
-│ • Classical Exact Brute-Force│ │ • Comparative Metrics & Plots│ │ • Streamlit/Web interactive  │
-│ • Classical Simulated Anneal │ │ • Midsem Pipeline (60% mark) │ │   dashboard for credit loan  │
+│ • Supervised ML Calibration  │ │   mapping ($h_i, J_{ij}$)    │ │   via Qiskit Runtime         │
+│ • Tri-objective scoring      │ │ • Standard QAOA ($p=1, 2$)   │ │ • Zero-Noise Extrapolation   │
+│   (Financial, Need, Impact)  │ │ • Tail-Risk CVaR-QAOA        │ │   (ZNE) Error Mitigation     │
+│ • Quadratic penalty QUBO     │ │   ($\alpha=0.25$ objective)  │ │ • Warm-Start / Recursive QAOA│
+│ • Classical Greedy Knapsack  │ │ • VQE Hardware-Efficient     │ │ • Scaled 50+ applicant cohort│
+│ • Classical Exact Brute-Force│ │   Ansatz ($R_y$ + CNOT)      │ │ • Streamlit/Web interactive  │
+│ • Classical Exact MILP       │ │ • Monte Carlo Risk Engine    │ │   dashboard for credit loan  │
+│ • Classical Simulated Anneal │ │ • Comparative Metrics & Plots│ │                              │
+│ • Automated Test Suite       │ │ • Midsem Pipeline (70% mark) │ │                              │
 ├──────────────────────────────┤ ├──────────────────────────────┤ ├──────────────────────────────┤
-│      STATUS: 100% DONE       │ │      STATUS: 50% DONE        │ │      STATUS: 0% PLANNED      │
-│      (Weight: 40% Total)     │ │      (Weight: 20% of 40%)    │ │      (Weight: 20% Total)     │
+│      STATUS: 100% DONE       │ │      STATUS: 75% DONE        │ │      STATUS: 0% PLANNED      │
+│      (Weight: 40% Total)     │ │      (Weight: 30% of 40%)    │ │      (Weight: 30% Total)     │
 └──────────────────────────────┘ └──────────────────────────────┘ └──────────────────────────────┘
                                                 │
                  ═══════════════════════════════════════════════════════════
-                 TOTAL MIDSEM PROGRESS CHECKPOINT: 40% + 20% = 60.0% COMPLETE
+                 TOTAL MIDSEM PROGRESS CHECKPOINT: 40% + 30% = 70.0% COMPLETE
                  ═══════════════════════════════════════════════════════════
 ```
 
 ---
 
-## 2. Granular Progress Tracking & Rubric Alignment (60% Checkpoint)
+## 2. Granular Progress Tracking & Rubric Alignment (70% Checkpoint)
 
 | Component | Task Description | Phase | Target % | Actual Status | Deliverable Artifact |
 |---|---|:---:|:---:|:---:|---|
 | **Problem Definition** | Mathematical formulation of Fair Microfinance Knapsack | Phase 1 | 100% | **COMPLETED** | `algorithmic_study.md` Sec 1 |
 | **Data Simulation** | Realistic cohort generator with demographics & need indices | Phase 1 | 100% | **COMPLETED** | `src/data_generator.py` |
+| **AI Repayment Model** | Supervised repayment prediction with Platt/Isotonic calibration | Phase 1 | 100% | **COMPLETED** | `src/repayment_model.py` |
 | **Tri-Objective Scoring** | Convex combination of Financial, Need, and Impact scores | Phase 1 | 100% | **COMPLETED** | `src/scoring.py` |
 | **QUBO Formulation** | Penalty matrix generation with quadratic fairness cross-terms | Phase 1 | 100% | **COMPLETED** | `src/qubo_builder.py` |
-| **Classical Baselines** | Greedy Ratio Knapsack, Exact Branch & Bound, Simulated Annealing | Phase 1 | 100% | **COMPLETED** | `src/classical_solvers.py` |
+| **Classical Baselines** | Greedy Ratio Knapsack, Exact Combinatorial, Simulated Annealing | Phase 1 | 100% | **COMPLETED** | `src/classical_solvers.py` |
+| **Classical Exact MILP** | Scipy MILP solver with exact linear budget & fairness bounds | Phase 1 | 100% | **COMPLETED** | `src/classical_solvers.py` |
+| **Automated Test Suite** | 11 unit tests for constraints, fairness, CVaR, and solvers | Phase 1 | 100% | **COMPLETED** | `tests/test_*.py` |
 | **Hamiltonian Mapping** | Binary to Pauli-Z transformation ($Q \to h_i Z_i + J_{ij} Z_i Z_j$) | Phase 2 | 100% | **COMPLETED** | `src/qubo_builder.py` |
 | **QAOA Implementation** | Problem & mixer unitaries with classical COBYLA optimizer | Phase 2 | 100% | **COMPLETED** | `src/quantum_engine.py` |
-| **VQE Implementation** | Parameterized TwoLocal ansatz with ground-state energy minimization | Phase 2 | 100% | **COMPLETED** | `src/quantum_engine.py` |
+| **CVaR-QAOA Engine** | Tail-risk Conditional Value-at-Risk objective ($\alpha=0.25$) | Phase 2 | 100% | **COMPLETED** | `src/quantum_engine.py` |
+| **VQE Implementation** | Parameterized TwoLocal ansatz with ground-state minimization | Phase 2 | 100% | **COMPLETED** | `src/quantum_engine.py` |
+| **Monte Carlo Risk Engine**| Stochastic scenario generator, discrete VaR and CVaR (95%) | Phase 2 | 100% | **COMPLETED** | `src/risk_engine.py` |
 | **Qiskit Circuit Export** | Native Qiskit circuit generator & QASM/Gate representation | Phase 2 | 100% | **COMPLETED** | `visuals/qiskit_qaoa_circuit.txt` |
-| **Midsem Pipeline** | End-to-end execution script compiling comparative tables | Phase 2 | 100% | **COMPLETED** | `midsem_pipeline.py` |
-| **Visual Analytics** | Publication-grade charts: Heatmap, QAOA convergence, Fairness vs Return | Phase 2 | 100% | **COMPLETED** | `visuals/*.png` (5 figures) |
+| **Midsem Pipeline** | End-to-end execution script compiling 8-solver comparative table | Phase 2 | 100% | **COMPLETED** | `midsem_pipeline.py` |
+| **Visual Analytics** | Publication-grade charts: Heatmap, QAOA convergence, Pareto tradeoff | Phase 2 | 100% | **COMPLETED** | `visuals/*.png` (5 figures) |
 | **Hardware Noise Modeling** | Depolarizing & readout error simulation with Qiskit Aer | Phase 2 | 0% | *Pending Endsem* | Phase 2 Extension |
 | **IBM Quantum Hardware** | Execution on real 127-qubit superconducting quantum processor | Phase 3 | 0% | *Pending Endsem* | Phase 3 Roadmap |
 | **Warm-Start QAOA** | Continuous relaxation initialization for faster convergence | Phase 3 | 0% | *Pending Endsem* | Phase 3 Roadmap |
 | **Interactive Dashboard** | Web interface for MFI loan officers with loan sliders | Phase 3 | 0% | *Pending Endsem* | Phase 3 Roadmap |
 
 **Net Weighted Progress Calculation**:
-$$\text{Progress} = \underbrace{40\%}_{\text{Phase 1 (100\%)}} + \underbrace{20\%}_{\text{Phase 2 (50\% implemented)}} + \underbrace{0\%}_{\text{Phase 3 (Pending)}} = \mathbf{60.0\%}$$
+$$\text{Progress} = \underbrace{40\%}_{\text{Phase 1 (100\%)}} + \underbrace{30\%}_{\text{Phase 2 (75\% implemented)}} + \underbrace{0\%}_{\text{Phase 3 (Pending)}} = \mathbf{70.0\%}$$
 
 ---
 
@@ -94,13 +102,13 @@ Use this structured 10-slide narrative for your mid-semester evaluation presenta
   $$H_C = \sum_{i=1}^N h_i Z_i + \sum_{i < j} J_{ij} Z_i Z_j + \text{offset} \cdot I$$
 - **Key Talking Point**: Binary approval/rejection is directly mapped onto qubit eigenvalues $+1$ ($|0\rangle$) and $-1$ ($|1\rangle$). The ground state of this spin Hamiltonian corresponds to the provably optimal loan allocation.
 
-### Slide 5: Quantum Algorithm 1: QAOA
+### Slide 5: Quantum Algorithms: Standard QAOA & Tail-Risk CVaR-QAOA
 - **Visual**: `visuals/qiskit_qaoa_circuit.txt` (Qiskit QAOA Circuit Diagram).
 - **Circuit Walkthrough**:
   1. Initialize $|+\rangle^{\otimes N}$ using Hadamard gates.
   2. Apply Problem Unitary $U_C(\gamma) = e^{-i \gamma H_C}$ using $R_Z$ and $R_{ZZ}$ two-qubit entangling gates.
   3. Apply Transverse Mixer Unitary $U_M(\beta) = \prod R_X(2\beta)$.
-  4. Classical optimizer (COBYLA) tunes $(\vec{\gamma}, \vec{\beta})$ to minimize $\langle H_C \rangle$.
+  4. **CVaR-QAOA Innovation**: Instead of standard expectation $\langle H_C \rangle$, CVaR-QAOA optimizes over the lowest $\alpha$-quantile ($\alpha = 0.25$) of the Hamiltonian spectrum (Barkoutsos et al. 2020), concentrating state probability on tail-loss robust configurations.
 
 ### Slide 6: Quantum Algorithm 2: VQE (Hardware-Efficient Ansatz)
 - **Visual**: VQE TwoLocal circuit diagram ($R_y$ single-qubit rotations + circular CNOT entanglement).
@@ -108,15 +116,15 @@ Use this structured 10-slide narrative for your mid-semester evaluation presenta
   - QAOA is problem-tailored (fewer parameters: $2p$).
   - VQE is an unconstrained expressive variational ansatz (explores broader Hilbert space, requires more classical optimization steps).
 
-### Slide 7: Midsem Experimental Results (Benchmark Comparison)
+### Slide 7: Midsem Experimental Results (8-Solver Benchmark Comparison)
 - **Visual**: `visuals/quantum_vs_classical_comparison.png` (Comparative Bar Chart).
 - **Benchmark Summary Table**:
-  - Show the table generated by `midsem_pipeline.py` comparing **Greedy Knapsack**, **Classical Exact (ILP)**, **Simulated Annealing**, **QAOA ($p=1, 2$)**, and **VQE**.
-  - Highlight: Classical Greedy has 0.0 fairness (violates demographic parity) and lower utility; QAOA reaches $>92\%$ approximation ratio with near-zero demographic disparity.
+  - Show the table generated by `midsem_pipeline.py` comparing **Greedy Knapsack**, **Classical Exact Combinatorial**, **Classical Exact MILP**, **Simulated Annealing**, **Standard QAOA ($p=1, 2$)**, **Tail-Risk CVaR-QAOA ($\alpha=0.25$)**, and **VQE**.
+  - Highlight: Classical Greedy severely violates fairness ($\text{DPD} = 0.75$, $\text{DIR} = 4.0$); Exact MILP guarantees $\text{DPD} = 0.00$; Quantum QAOA matches high utility with balanced fairness.
 
 ### Slide 8: Quantum Optimization Dynamics & Probability Peak
 - **Visuals**:
-  - `visuals/qaoa_convergence_profile.png` (Energy minimization curve over optimization iterations).
+  - `visuals/qaoa_convergence_profile.png` (Energy minimization curve showing QAOA, CVaR-QAOA, and VQE over iterations).
   - `visuals/bitstring_probability_distribution.png` (Quantum measurement distribution showing the sharp ground state probability peak).
 - **Key Talking Point**: Demonstrates that quantum interference constructively amplifies the optimal allocation bitstring while suppressing sub-optimal, unfair configurations.
 
@@ -124,12 +132,13 @@ Use this structured 10-slide narrative for your mid-semester evaluation presenta
 - **Visual**: `visuals/fairness_vs_budget_tradeoff.png`
 - **Key Talking Point**: By varying penalty hyperparameter $\lambda_F$, Q-FAR traces the Pareto frontier between financial return and social fairness, enabling MFI policy makers to select their exact operational point.
 
-### Slide 10: Conclusion & Roadmap for Endsem (The Remaining 40%)
-- **Midsem Deliverables (60% Complete)**:
-  - Formulated problem, derived QUBO/Ising mathematics.
-  - Implemented QAOA and VQE engines with classical baseline suite.
-  - Verified feasibility, fairness metrics, and visual analytics on benchmark cohorts.
-- **Endsem Roadmap (Remaining 40%)**:
+### Slide 10: Conclusion & Roadmap for Endsem (The Remaining 30%)
+- **Midsem Deliverables (70% Accomplished)**:
+  - Formulated problem, derived QUBO/Ising mathematics, implemented automated test suite (11 unit tests).
+  - Trained calibrated supervised AI repayment prediction model.
+  - Implemented Standard QAOA, Tail-Risk CVaR-QAOA, VQE, Classical Exact MILP, and heuristic suite.
+  - Verified feasibility, tail-loss risk (VaR/CVaR), fairness metrics, and visual analytics on benchmark cohorts.
+- **Endsem Roadmap (Remaining 30%)**:
   1. Execution on real IBM Quantum superconducting hardware via Qiskit Runtime.
   2. Implementation of Zero-Noise Extrapolation (ZNE) error mitigation against gate noise.
   3. Development of Warm-Start QAOA and an interactive Streamlit loan allocation dashboard.
