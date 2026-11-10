@@ -1,0 +1,45 @@
+{
+  "overall": {
+    "n": 1200,
+    "base_rate": 0.8683333333333333,
+    "roc_auc": 0.7417150562452928,
+    "pr_auc_default": 0.3436979983382535,
+    "brier": 0.10166902631017642,
+    "log_loss": 0.3450615870979672,
+    "ece": 0.010409632235346251,
+    "mean_pred": 0.8708762794943224
+  },
+  "group_A": {
+    "n": 614,
+    "base_rate": 0.7980456026058632,
+    "roc_auc": 0.6991112574061883,
+    "pr_auc_default": 0.3928859675714663,
+    "brier": 0.14637548512714446,
+    "log_loss": 0.46022160223347675,
+    "ece": 0.015275842216479877,
+    "mean_pred": 0.802111346293585
+  },
+  "group_B": {
+    "n": 586,
+    "base_rate": 0.9419795221843004,
+    "roc_auc": 0.585731031543052,
+    "pr_auc_default": 0.10636770462988368,
+    "brier": 0.054826422703319146,
+    "log_loss": 0.22439904564198968,
+    "ece": 0.014821112653657563,
+    "mean_pred": 0.9429269091619894
+  },
+  "selected": {
+    "model": "logreg",
+    "calibration": "none",
+    "features": "full",
+    "columns": [
+      "requested_amount",
+      "monthly_income",
+      "dti_ratio",
+      "repayment_history",
+      "poverty_index",
+      "dependents"
+    ]
+  }
+}
