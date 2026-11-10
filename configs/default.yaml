@@ -1,0 +1,76 @@
+# ---------------------------------------------------------------------------
+# Q-FAR default configuration.  Every number used by the pipeline lives here and
+# is copied into results/<run>/manifest.json so a run can be reproduced exactly.
+# ---------------------------------------------------------------------------
+seed: 20261110
+
+# ---- Data (SYNTHETIC simulation study; see docs/DATA_CARD.md) ----------------
+data:
+  source: synthetic          # "synthetic" or "csv" (real labelled data, see data.load_labelled_csv)
+  csv_path: null
+  pool_size: 6000
+  split: {train: 0.6, validation: 0.2, test: 0.2}   # stratified on the repayment label
+
+# ---- Repayment (PD) model ----------------------------------------------------
+pd_model:
+  cv_folds: 5                # cross-validation is run on the TRAIN split only
+  shortlist: 3               # top-k CV configs re-checked on the VALIDATION split
+  models: [logreg, rf, gbm]
+  calibrations: [none, sigmoid, isotonic]
+
+# ---- Financial assumptions -----------------------------------------------------
+finance:
+  interest_rate: 0.20        # r   (flat, per loan cycle)
+  lgd: 1.0                   # LGD (fraction of principal lost on default)
+
+# ---- Fixed normalisation references (NOT cohort dependent) --------------------
+normalisation:
+  pci_min: 1000.0            # INR / person / month  (per-capita income reference range)
+  pci_max: 25000.0
+  dependents_max: 6          # D_i = clip(dependents / 6, 0, 1)
+  branch_distance_max_km: 20.0
+  loss_reference_inr: 30000.0  # money is expressed in units of L_ref inside risk terms
+
+# ---- Scores ------------------------------------------------------------------------
+scores:
+  weights: {F: 0.3333333333333333, N: 0.3333333333333333, S: 0.3333333333333333}  # declared baseline
+  need_weights: {poverty: 0.5, dependents: 0.3, low_income: 0.2}
+  # Option A (financial-exclusion indicators). Used when all four columns exist;
+  # otherwise the pipeline falls back to the "Social Priority Score" (Option B).
+  inclusion_weights: {first_time_formal_borrower: 0.25, no_formal_account: 0.25,
+                      underserved_locality: 0.25, branch_distance: 0.25}
+  priority_weights: {women_led: 0.6, small_loan: 0.4}   # Option B only
+  loan_amount_max_inr: 50000.0                          # Option B only
+
+# ---- Default-dependence model (shared by the variance term and CVaR scenarios) ----
+risk:
+  rho_global: 0.05           # latent correlation from a common macro factor
+  rho_village: 0.25          # additional latent correlation inside a village
+  n_scenarios: 2000
+  cvar_alpha: 0.95
+
+# ---- Allocation problem -----------------------------------------------------------
+allocation:
+  cohort_size: 8
+  min_per_group: 2
+  budget_fraction: 0.5       # B = floor(0.5 * total requested units)
+  money_unit_inr: 5000       # budget/slack arithmetic is done in integer units of this size
+  eta: 1.0                   # variance-risk coefficient
+  lambda_F: 2.0              # soft fairness penalty (Approach A)
+  lambda_R: 0.5              # financial-CVaR weight (tail-risk problem P2 only)
+  lambda_B_margin: 1.1       # lambda_B = margin * sum_i max(U_i, 0) + 1e-3  (> sufficient bound)
+  hard_fairness_eps: 0.25    # epsilon of the separate hard-fairness MILP baseline
+
+# ---- Solvers -------------------------------------------------------------------
+solvers:
+  sa: {steps: 6000, restarts: 8}
+  qaoa: {depths: [1, 2, 3], restarts: 4, max_iter: 250, shots: 1024}
+  cvar_qaoa: {depths: [1], alpha_q: 0.25, restarts: 4, max_iter: 250, shots: 1024}
+  vqe: {reps: 2, restarts: 4, max_iter: 400, shots: 1024}
+
+# ---- Experiments ------------------------------------------------------------------
+experiments:
+  allocation_cohorts: 30
+  weight_cohorts: 30
+  ablation_cohorts: 30
+  weight_grid_step: 0.1

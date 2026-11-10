@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qfar"
+version = "2.0.0"
+description = "Fairness- and risk-aware microfinance allocation as a QUBO: classical and simulated-quantum solvers (synthetic simulation study)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = ["numpy>=1.24", "scipy>=1.11", "pandas>=2.0", "scikit-learn>=1.3", "joblib", "pyyaml"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
