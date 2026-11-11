@@ -1,0 +1,7 @@
+numpy>=1.24
+scipy>=1.11        # milp (HiGHS) requires >= 1.9
+pandas>=2.0
+scikit-learn>=1.3
+joblib
+pyyaml
+pytest>=7
