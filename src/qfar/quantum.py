@@ -185,3 +185,89 @@ def solve_vqe(q: AllocationQUBO, reps: int = 2, restarts: int = 4, max_iter: int
             best, best_nfev = r, count[0] - c0
     return _outcome(f"vqe_L{reps}", q, sv, evolve(best.x), best.x, count[0], best_nfev, shots, rng,
                     vqe_resources(q, reps, sv.ring), dict(reps=reps, restarts=restarts))
+
+
+def _convex_relaxation(q: AllocationQUBO, eps: float = 0.05) -> np.ndarray:
+    """Solve continuous QP relaxation of J1(x) on [0, 1]^N s.t. w.x <= B, returning c* in [eps, 1-eps]^n."""
+    eps = float(np.clip(eps, 1e-4, 0.25))
+    U, w, B, G, sig = q.U, q.w, float(q.B), q.Gamma, q.sigma
+    eta, lam_F = float(q.eta), float(q.lam_F)
+
+    def val_grad(x):
+        s_x = float(sig @ x)
+        Gx = G @ x
+        val = float(-U @ x + eta * (x @ Gx) + lam_F * (s_x ** 2))
+        grad = -U + 2.0 * eta * Gx + 2.0 * lam_F * s_x * sig
+        return val, grad
+
+    x0 = np.full(q.N, min(0.5, B / max(float(w.sum()), 1.0)))
+    cons = {"type": "ineq", "fun": lambda x: B - float(w @ x), "jac": lambda _x: -w.astype(float)}
+    res = minimize(val_grad, x0, jac=True, method="SLSQP",
+                   bounds=[(0.0, 1.0)] * q.N, constraints=[cons], options={"ftol": 1e-10, "maxiter": 200})
+    x_star = np.clip(res.x if res.success else x0, 0.0, 1.0)
+    c_x = np.clip(x_star, eps, 1.0 - eps)
+
+    # Decompose continuous slack r = B - w.x* greedily across slack qubits in [eps, 1-eps]
+    rem = max(0.0, B - float(w @ x_star))
+    c_s = np.zeros(q.K, float)
+    for k in np.argsort(-q.slack_coef):
+        coef = float(q.slack_coef[k])
+        val = min(1.0, max(0.0, rem / coef)) if coef > 0 else 0.0
+        c_s[k] = val
+        rem = max(0.0, rem - coef * val)
+    c_s = np.clip(c_s, eps, 1.0 - eps)
+    return np.concatenate([c_x, c_s])
+
+
+def _ws_mixer_gates(thetas: np.ndarray, beta: float) -> list[np.ndarray]:
+    """Single-qubit warm-start mixer gates exp(+i beta (cos(theta) Z + sin(theta) X))."""
+    cb, sb = np.cos(beta), 1j * np.sin(beta)
+    gates = []
+    for th in thetas:
+        ct, st = np.cos(th), np.sin(th)
+        gates.append(np.array([[cb + sb * ct, sb * st],
+                               [sb * st, cb - sb * ct]], dtype=complex))
+    return gates
+
+
+def solve_warm_start_qaoa(q: AllocationQUBO, p: int = 1, alpha_q: float = 1.0, eps: float = 0.05,
+                          restarts: int = 4, max_iter: int = 250, shots: int = 1024,
+                          seed: int = 0, init=None, sv=None) -> dict:
+    """Warm-Start QAOA / CVaR-WS-QAOA (Egger et al., Quantum 5:479, 2021).
+
+    Initialises in |phi*> = prod_i RY(theta_i)|0> with sin^2(theta_i/2) = c_i*
+    from the regularised continuous QP relaxation, and evolves with the aligned
+    single-qubit warm-start mixer whose ground state is |phi*>.
+    """
+    rng = np.random.default_rng(seed); sv = sv or StateVec(q); count = [0]
+    c_star = _convex_relaxation(q, eps=eps)
+    thetas = 2.0 * np.arcsin(np.sqrt(c_star))
+    ket0 = np.zeros(sv.dim, complex); ket0[0] = 1.0
+    phi_star = sv.ry_all(ket0, thetas)
+
+    def evolve(par):
+        st = phi_star.copy()
+        for l in range(p):
+            st = st * np.exp(-1j * par[l] * sv.Etil)
+            for i, g in enumerate(_ws_mixer_gates(thetas, float(par[p + l]))):
+                st = sv._apply(st, g, i)
+        return np.abs(st) ** 2
+
+    def obj(par):
+        count[0] += 1
+        return energy_cvar_lower(evolve(par), sv.E, alpha_q, sv.order)
+
+    starts = [] if init is None else [np.asarray(init, float)]
+    while len(starts) < restarts:
+        starts.append(np.concatenate([rng.uniform(0, np.pi, p), rng.uniform(0, np.pi / 2, p)]))
+    best, best_nfev = None, 0
+    for x0 in starts:
+        c0 = count[0]
+        r = minimize(obj, x0, method="COBYLA", options={"maxiter": max_iter, "rhobeg": 0.3})
+        if best is None or r.fun < best.fun:
+            best, best_nfev = r, count[0] - c0
+    res_dict = qaoa_resources(q, p)
+    res_dict["depth"] += 2 * p + 1                      # initial RY + RY-RZ-RY vs RX per layer
+    name = f"warm_start_qaoa_p{p}" if alpha_q >= 1 else f"warm_start_cvar_qaoa_p{p}_a{alpha_q}"
+    return _outcome(name, q, sv, evolve(best.x), best.x, count[0], best_nfev, shots, rng,
+                    res_dict, dict(p=p, alpha_q=alpha_q, eps=eps, restarts=restarts, c_star=c_star))

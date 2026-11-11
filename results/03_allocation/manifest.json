@@ -1,12 +1,12 @@
 {
-  "created_utc": "2026-11-10T11:49:59+00:00",
-  "git_commit": "9362dccef8c8411d65eadb88fb9eb21b65770051",
-  "python": "3.13.18",
+  "created_utc": "2026-11-11T19:34:51+00:00",
+  "git_commit": "893f96b671b0c2859e1279f0bb7970aa2bc09aca",
+  "python": "3.12.10",
   "packages": {
-    "numpy": "2.5.3",
+    "numpy": "2.5.4",
     "scipy": "1.18.1",
     "sklearn": "1.9.1",
-    "pandas": "3.0.5"
+    "pandas": "3.1.1"
   },
   "config": {
     "seed": 20261110,

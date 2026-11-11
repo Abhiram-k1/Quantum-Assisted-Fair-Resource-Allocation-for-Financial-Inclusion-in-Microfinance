@@ -226,6 +226,27 @@ selects a noticeably different set (Jaccard 0.65–0.74 vs E7).
 
 ---
 
+## Extended Modules: Warm-Start QAOA, Qiskit Noise/ZNE, CLI & Dashboard
+
+See [`docs/FINAL_REPORT.md`](docs/FINAL_REPORT.md) for the complete v1-vs-v2 conceptual audit, novelty alignment, and scaling/noise tables. Additional capabilities implemented on top of core `01`–`04`:
+
+- **Warm-Start QAOA (`quantum.solve_warm_start_qaoa`):** Initialises from the continuous convex QP relaxation of $J_1(x)$ ($x\in[0,1]^N,\ w^\top x \le B$) with greedy fractional slack initialisation and an aligned single-qubit mixer (`R_y(\theta_i)` / `exp(+i\beta(\cos\theta_i Z_i + \sin\theta_i X_i))`). Across $N \in \{4, 6, 8, 10\}$ (10 cohorts per size), Warm-Start QAOA achieves up to **163x ground-state probability amplification** over uniform at $N=10$ (15 qubits, `P_opt_exact = 0.1634` vs `0.0009` for standard `qaoa_p1`) with `hit_opt_P1 = 0.90` vs `0.00` for `qaoa_p1`.
+- **Qiskit Circuit Export, Depolarising + Readout Noise & ZNE (`qiskit_backend.py`):** Exact OpenQASM 2.0 / ASCII circuit compilation, local unitary gate folding ($c \in \{1, 3, 5\}$), exact `DensityMatrix` ($n \le 8$) + unbiased L3-chunked Kraus trajectories ($n > 8$), and Richardson ZNE reducing expectation bias by **57%–75%** across $N \in \{4, 6, 8\}$.
+- **Unified Working Module & CLI (`pipeline.py`, `scripts/run_qfar.py`):** Accepts Q-FAR cohorts and legacy v1 CSVs (`Group_A_Marginalized` / `Group_B_General` without `village` or `repaid` labels):
+  ```bash
+  pip install -e ".[dev,full]"
+  python scripts/run_qfar.py --cohort 0 --solver warm_start_qaoa_p1 --qiskit --zne
+  python scripts/run_qfar.py --csv ../data/sample_applicants.csv --solver warm_start_qaoa_p1 --qiskit --zne
+  ```
+- **Scaling Benchmark, Figures & Interactive Dashboard:**
+  ```bash
+  python scripts/06_scaling_and_noise.py   # results/05_scaling_and_noise/
+  python scripts/05_generate_visuals.py    # 8 PNGs in results/figures/
+  python scripts/07_dashboard.py           # Dash + Plotly UI at http://127.0.0.1:8050
+  ```
+
+---
+
 ## Limitations
 
 * **Synthetic data.** Effect sizes depend on the simulator. Real labelled data

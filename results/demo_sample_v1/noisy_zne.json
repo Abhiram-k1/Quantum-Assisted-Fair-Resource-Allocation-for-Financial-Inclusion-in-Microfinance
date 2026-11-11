@@ -1,0 +1,46 @@
+{
+  "source_solver": "warm_start_qaoa_p1",
+  "ideal_expectation": 90.93223175622637,
+  "zne": {
+    "scales": [
+      1.0,
+      3.0,
+      5.0
+    ],
+    "energies": [
+      289.89320374558986,
+      442.61924529301217,
+      700.3210362391924
+    ],
+    "degree": 2,
+    "zne_energy": 252.8960889964129,
+    "coeffs": [
+      13.12196867484474,
+      23.875146074332168,
+      252.8960889964129
+    ]
+  },
+  "per_scale_summary": [
+    {
+      "scale_factor": 1,
+      "expectation": 289.89320374558986,
+      "p_feasible_exact": 0.6462661970915938,
+      "feasible": true,
+      "J1": -2.988671359338101
+    },
+    {
+      "scale_factor": 3,
+      "expectation": 442.61924529301217,
+      "p_feasible_exact": 0.6351864535494114,
+      "feasible": true,
+      "J1": -2.988671359338101
+    },
+    {
+      "scale_factor": 5,
+      "expectation": 700.3210362391924,
+      "p_feasible_exact": 0.5900677123302948,
+      "feasible": true,
+      "J1": -2.988671359338101
+    }
+  ]
+}
