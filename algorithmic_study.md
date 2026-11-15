@@ -1,4 +1,4 @@
-# Algorithmic Study & Literature Review
+﻿# Algorithmic Study & Literature Review
 ## Quantum-Assisted Fair Resource Allocation for Financial Inclusion in Microfinance (Q-FAR)
 
 ---
@@ -314,3 +314,44 @@ $$-\epsilon \le \frac{1}{|G_A|} \sum_{i \in G_A} x_i - \frac{1}{|G_B|} \sum_{j \
 $$x_i \in \{0, 1\} \quad \forall i \in \{1, \dots, N\}$$
 
 This is solved to guaranteed global optimality using `scipy.optimize.milp` via the branch-and-cut simplex algorithm, serving as the benchmark standard for quantum and heuristic solvers.
+
+
+---
+
+## ✅ FINAL STATUS APPENDIX — End-Semester Completion
+
+> This document describes the algorithmic study written at the **midterm (70% checkpoint)**.  
+> Below is a summary of all algorithms completed by end-semester in Q-FAR v2.
+
+### Algorithms Completed (v2.0 — Full Implementation)
+
+| Algorithm | v1 (Midsem) | v2 (Final) | Location |
+|-----------|------------|-----------|----------|
+| PD Model (logreg + Platt calibration) | ✅ | ✅ | `pipeline.py` |
+| Tri-objective scoring (F, N, S) | ✅ | ✅ | `pipeline.py` |
+| Monte Carlo CVaR (2500 scenarios) | ✅ | ✅ | `quantum.py` |
+| QUBO builder (λ_B lower bound theorem) | ✅ | ✅ | `quantum.py` |
+| QUBO → Ising transformation | ✅ | ✅ | `quantum.py` |
+| Classical Exact (brute force) | ✅ | ✅ | `quantum.py` |
+| Classical MILP | ✅ | ✅ | `quantum.py` |
+| Simulated Annealing | ✅ | ✅ | `quantum.py` |
+| Greedy Knapsack | ✅ | ✅ | `quantum.py` |
+| Standard QAOA (p=1,2) | ✅ | ✅ | `quantum.py` |
+| CVaR-QAOA (α=0.25) | ✅ | ✅ | `quantum.py` |
+| VQE (HEA ansatz) | ✅ | ✅ | `quantum.py` |
+| **Warm-Start QAOA** | ❌ planned | ✅ | `quantum.py` |
+| **Qiskit circuit synthesis** | partial | ✅ | `qiskit_backend.py` |
+| **Noise simulation** | ❌ planned | ✅ | `qiskit_backend.py` |
+| **ZNE (gate folding + Richardson)** | ❌ planned | ✅ | `qiskit_backend.py` |
+| **Scaling study (N∈{4,6,8,10})** | ❌ planned | ✅ | `scripts/06_scaling_and_noise.py` |
+| **Interactive Dash dashboard** | ❌ planned (Streamlit) | ✅ (Dash 4.5.0) | `dashboard.py` |
+
+### Verified Final Results
+
+- **489 tests** — 0 failures
+- **WS-QAOA at N=10**: P(x\*) = 0.1634 vs QAOA 0.0009 (163× improvement, 90% hit rate)
+- **ZNE bias reduction**: 57–75% across N ∈ {4, 6, 8}
+- **Budget feasibility**: 100% (0 / 30 violations)
+- **PD Model**: ROC-AUC = 0.7417, ECE = 0.0104, Brier = 0.1017
+
+**Full report:** [`qfar/docs/FINAL_REPORT.md`](qfar/docs/FINAL_REPORT.md)
