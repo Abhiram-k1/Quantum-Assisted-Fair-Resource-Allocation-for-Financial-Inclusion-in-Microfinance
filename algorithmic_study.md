@@ -1,4 +1,4 @@
-﻿# Algorithmic Study & Literature Review
+# Algorithmic Study & Literature Review
 ## Quantum-Assisted Fair Resource Allocation for Financial Inclusion in Microfinance (Q-FAR)
 
 ---

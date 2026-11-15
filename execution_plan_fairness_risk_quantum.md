@@ -1,4 +1,4 @@
-﻿# Execution Plan: Fairness- and Tail-Risk-Aware Quantum Optimization for Microfinance Loan Allocation
+# Execution Plan: Fairness- and Tail-Risk-Aware Quantum Optimization for Microfinance Loan Allocation
 **A Comparative Study of QAOA, VQE, CVaR-QAOA, and Classical Solvers**
 
 ---
