@@ -35,3 +35,7 @@ Thumbs.db
 
 # ── Jupyter (redundant but explicit) ─────────────────────────────────────────
 .ipynb_checkpoints/
+
+# ── Metals / Scala / MATLAB artifacts ───────────────────────────────────────
+.metals/
+slprj/
